@@ -16,7 +16,7 @@ python program.
 
 `tiktoken-cli` allows you to write your program in any language. It's a
 simple wrapper around `tiktoken` that will read your prompt from STDIN and
-write the amount of tokens to STDOUT. Now you can write your program in
+write the tokens to STDOUT. Now you can write your program in
 your favorite language and use the CLI for token counting.
 
 It's almost not worth publishing a github repos for so few lines, but I
@@ -33,24 +33,15 @@ documented [in the API doc here](https://platform.openai.com/docs/guides/chat)
 
 ## Install
 
-`tiktoken-cli` is a simple script, you can just download it and put it
-where it's convenient for you.
-
-Make it executable:
+`tiktoken-cli` is a simple script, you can install via pipx.
 
 ```shell
-chmod +x ./tiktoken-cli
-```
-
-And install tiktoken:
-
-```shell
-pip install tiktoken
+pipx install tiktoken-cli
 ```
 
 ## Usage
 
-To use `tiktoken-cli` send your prompt as STDIN, and read the token count
+To use `tiktoken` send your prompt as STDIN, and read the tokens
 as STDOUT.
 
 Examples:
@@ -58,40 +49,30 @@ Examples:
 In shell:
 
 ```shell
-count=$(echo "Hello, world!" | ./tiktoken-cli)
-echo $count # 4
+tiktoken --model gpt-4 in.txt out.txt
 ```
 
-In ruby:
+Replace the file with `-` for standard input/output:
 
-```ruby
-input_data = "Hello, world!"
-
-output_data = IO.popen('./tiktoken-cli', 'r+') do |pipe|
-  pipe.puts input_data
-  pipe.close_write
-  pipe.read
-end
-
-puts output_data # 4
-
-# note that the value is a string, you need to cast it
-# to use it as a number
-puts output_data.to_i + 10
+```shell
+echo "Hello, world!" | tiktoken --model gpt-4 - out.txt # writes tokens to out.txt
+tiktoken --model gpt-4 in.txt - # writes tokens to stdout
 ```
 
-Note that forking a subprocess like that is costly. You won't notice it if
-you fork once per request, you will definitely notice it if you fork ten
-times. So if you want to compute the token count for a list of messages,
-it's best to concatenate all the messages in a single string and count
-tokens on that string rather than counting tokens for each message
-individually and summing it up, or the performance cost will snowball.
+You can count tokens easily:
+
+```shell
+echo "Hello, world!" | tiktoken - | wc -l
+```
 
 ## Model
 
 `tiktoken` counts tokens differently based on model. By default, the model
-used is gpt-3.5-turbo-0301 (that's the chatGPT model, at the time of
-writing).
+used is gpt-3.5-turbo.
 
-You can change the model using the `TIKTOKEN_MODEL` environment variable.
-Or, you know, edit the source file, it's 17 lines of code. :)
+You can change the model using the `--model` option.
+
+For the full list of models available:
+```shell
+tiktoken --help
+```
